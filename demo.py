@@ -1,4 +1,5 @@
 import csv
+import cv2
 import json
 import os
 import pickle
@@ -8,6 +9,9 @@ import torch
 import torch.nn as nn
 from pyvi import ViTokenizer
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from tools.vn_ocr import extract_text_from_image
+from PIL import ImageGrab, Image
+import numpy as np
 
 
 try:
@@ -30,9 +34,9 @@ if IN_COLAB:
 else:
     BASE_PATH = "."
 
-LSTM_DIR = os.path.join(BASE_PATH, "file_train", "ltsm", "lstm")
-PHOBERT_DIR = os.path.join(BASE_PATH, "file_train", "phobert")
-VISUAL_DIR = os.path.join(BASE_PATH, "file_train", "visual", "visual")
+LSTM_DIR = os.path.join(BASE_PATH, "checkpoints", "lstm")
+PHOBERT_DIR = os.path.join(BASE_PATH, "checkpoints", "phobert")
+VISUAL_DIR = os.path.join(BASE_PATH, "checkpoints", "visual")
 
 LABEL_MAPPING = {0: "Real", 1: "Fake"}
 
@@ -200,10 +204,16 @@ def predict_lstm(text, model, word_to_idx, max_len):
     else:
         indexed = indexed[:max_len]
 
-    tensor = torch.tensor([indexed]).to(next(model.parameters()).device)
+    tensor_input = torch.tensor([indexed]).to(next(model.parameters()).device)    # --- 4. PREDICTION ---
     with torch.no_grad():
-        output = model(tensor)
-        prediction = torch.argmax(output, dim=1).item()
+        # [LOGITS] - Kết quả thô từ mô hình
+        outputs = model(tensor_input)
+        # [SOFTMAX] - Chuyển Logits thành xác suất (%) để hiển thị cho người dùng
+        probs = torch.softmax(outputs, dim=1)
+        # [ARGMAX] - Lấy nhãn có xác suất cao nhất
+        prediction = torch.argmax(probs, dim=1).item()
+        
+    confidence = probs[0][prediction].item()
     return LABEL_MAPPING[prediction]
 
 
@@ -211,10 +221,16 @@ def predict_phobert(text, model, tokenizer):
     model.eval()
     cleaned = clean_text(text)
     tokenized = ViTokenizer.tokenize(cleaned)
-    inputs = tokenizer(tokenized, return_tensors="pt", truncation=True, padding=True, max_length=256).to(model.device)
+    inputs = tokenizer(tokenized, return_tensors="pt", truncation=True, padding=True, max_length=256).to(model.device)        # --- 4. PREDICTION ---
     with torch.no_grad():
+        # [LOGITS] - Kết quả thô từ mô hình PhoBERT
         outputs = model(**inputs)
-        prediction = torch.argmax(outputs.logits, dim=1).item()
+        # [SOFTMAX] - Chuyển đổi sang xác suất (%)
+        probs = torch.softmax(outputs.logits, dim=1)
+        # [ARGMAX] - Lấy nhãn cuối cùng
+        prediction = torch.argmax(probs, dim=1).item()
+        
+    confidence = probs[0][prediction].item()
     return LABEL_MAPPING[prediction]
 
 
@@ -235,10 +251,47 @@ def main():
         return
 
     while True:
-        print("\n" + "=" * 30)
-        text = input("Nhap van ban tin tuc/post (hoac 'q' de thoat): ")
-        if text.lower() == 'q':
+        print("\n" + "=" * 40)
+        user_input = input("Nhap van ban / Duong dan anh / 'v' de dan tu Clipboard: ").strip().strip('"')
+        
+        if user_input.lower() == 'q':
             break
+
+        if not user_input:
+            continue
+
+        text = user_input
+        
+        # --- CLIPBOARD SUPPORT ---
+        if user_input.lower() in ['v', 'clip', 'paste']:
+            print("📋 Dang lay anh tu Clipboard...")
+            img_clip = ImageGrab.grabclipboard()
+            if isinstance(img_clip, Image.Image):
+                # Chuyen tu PIL sang OpenCV (RGB -> BGR)
+                text_image = cv2.cvtColor(np.array(img_clip), cv2.COLOR_RGB2BGR)
+                print("🔍 Dang quet OCR tu anh trong Clipboard...")
+                text = extract_text_from_image(text_image)
+                print(f"\n📝 Text trich xuat duoc:\n{'-'*20}\n{text}\n{'-'*20}")
+            elif isinstance(img_clip, list): # Truong hop copy file anh trong folder
+                if len(img_clip) > 0 and isinstance(img_clip[0], str):
+                    text = extract_text_from_image(img_clip[0])
+            else:
+                print("⚠️ Clipboard khong chua anh!")
+                continue
+
+        # --- FILE PATH OCR ---
+        elif any(user_input.lower().endswith(ext) for ext in ['.jpg', '.jpeg', '.png', '.bmp']):
+            if os.path.exists(user_input):
+                print(f"🔍 Dang quet OCR cho anh: {user_input}...")
+                text = extract_text_from_image(user_input)
+                print(f"\n📝 Text trich xuat duoc:\n{'-'*20}\n{text}\n{'-'*20}")
+            else:
+                print(f"❌ File khong ton tai: {user_input}")
+                continue
+
+        if not text.strip():
+            print("⚠️ Noi dung trong hoac khong nhan dien duoc text!")
+            continue
 
         print("\nKet qua du doan:")
         if lstm_model is not None:

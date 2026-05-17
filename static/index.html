@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaroMart | Fake News AI Detection</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+            --text-dim: #94a3b8;
+            --accent: #10b981;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image: radial-gradient(circle at top right, rgba(99, 102, 241, 0.15), transparent),
+                              radial-gradient(circle at bottom left, rgba(16, 185, 129, 0.1), transparent);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #818cf8, #34d399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        p.subtitle {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+        }
+
+        .main-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .input-group {
+            margin-bottom: 2rem;
+        }
+
+        textarea {
+            width: 100%;
+            height: 150px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            color: var(--text);
+            font-size: 1.1rem;
+            resize: none;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+        }
+
+        .actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        .upload-zone {
+            flex: 1;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 0.8rem;
+            text-align: center;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .upload-zone:hover, .upload-zone.dragover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--accent);
+            color: var(--text);
+        }
+
+        .results {
+            margin-top: 3rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            display: none;
+        }
+
+        .result-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .result-label {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .value-real { color: var(--accent); }
+        .value-fake { color: var(--danger); }
+
+        .ocr-box {
+            grid-column: span 2;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 16px;
+            padding: 1.2rem;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text-dim);
+            border-left: 4px solid var(--primary);
+        }
+
+        .loading {
+            display: none;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .tip {
+            margin-top: 2rem;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        #preview-container {
+            display: none;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        #preview-img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>MaroMart AI</h1>
+            <p class="subtitle">Hệ thống nhận diện tin giả đa phương thức</p>
+        </header>
+
+        <div class="main-card">
+            <div id="preview-container">
+                <img id="preview-img" src="" alt="Preview">
+            </div>
+
+            <div class="input-group">
+                <textarea id="text-input" placeholder="Nhập nội dung bài viết hoặc dán ảnh vào đây..."></textarea>
+                <div class="actions">
+                    <button id="btn-predict">⚡ Kiểm tra ngay</button>
+                    <div class="upload-zone" id="drop-zone">
+                        📁 Kéo thả hoặc nhấn để chọn ảnh
+                        <input type="file" id="file-input" hidden accept="image/*">
+                    </div>
+                </div>
+            </div>
+
+            <div class="loading" id="loader">
+                <div class="spinner"></div>
+                <p>Đang xử lý bằng AI...</p>
+            </div>
+
+            <div class="results" id="results-area">
+                <div class="ocr-box" id="ocr-result" style="display: none;"></div>
+                
+                <div class="result-card">
+                    <div class="result-label">Mô hình LSTM</div>
+                    <div class="result-value" id="res-lstm">-</div>
+                </div>
+
+                <div class="result-card">
+                    <div class="result-label">Mô hình PhoBERT</div>
+                    <div class="result-value" id="res-phobert">-</div>
+                </div>
+            </div>
+
+            <div class="tip">
+                💡 <strong>Mẹo:</strong> Bạn có thể nhấn <strong>Ctrl + V</strong> ở bất kỳ đâu trên trang này để dán ảnh trực tiếp từ bộ nhớ tạm!
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const textInput = document.getElementById('text-input');
+        const btnPredict = document.getElementById('btn-predict');
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const loader = document.getElementById('loader');
+        const resultsArea = document.getElementById('results-area');
+        const ocrBox = document.getElementById('ocr-result');
+        const previewContainer = document.getElementById('preview-container');
+        const previewImg = document.getElementById('preview-img');
+
+        // Gửi text prediction
+        btnPredict.onclick = async () => {
+            const text = textInput.value.trim();
+            if (!text) return alert("Vui lòng nhập nội dung!");
+            
+            showLoading(true);
+            const formData = new FormData();
+            formData.append('text', text);
+
+            try {
+                const response = await fetch('/predict/text', { method: 'POST', body: formData });
+                const data = await response.json();
+                displayResults(data);
+            } catch (err) {
+                alert("Lỗi kết nối server!");
+            } finally {
+                showLoading(false);
+            }
+        };
+
+        // Xử lý upload ảnh
+        dropZone.onclick = () => fileInput.click();
+        fileInput.onchange = (e) => handleFiles(e.target.files);
+
+        // Kéo thả
+        dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('dragover'); };
+        dropZone.ondragleave = () => dropZone.classList.remove('dragover');
+        dropZone.ondrop = (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        };
+
+        // --- QUAN TRỌNG: Ctrl + V (Paste Image) ---
+        window.addEventListener('paste', (e) => {
+            const items = e.clipboardData.items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    const blob = items[i].getAsFile();
+                    handleFiles([blob]);
+                }
+            }
+        });
+
+        async function handleFiles(files) {
+            if (files.length === 0) return;
+            const file = files[0];
+
+            // Hiển thị preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImg.src = e.target.result;
+                previewContainer.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+
+            showLoading(true);
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/predict/image', { method: 'POST', body: formData });
+                const data = await response.json();
+                displayResults(data);
+            } catch (err) {
+                alert("Lỗi xử lý ảnh!");
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function showLoading(show) {
+            loader.style.display = show ? 'block' : 'none';
+            resultsArea.style.display = show ? 'none' : 'grid';
+            if (show) previewContainer.style.display = 'none';
+        }
+
+        function displayResults(data) {
+            if (data.text) {
+                ocrBox.innerText = "📝 Nội dung trích xuất: " + data.text;
+                ocrBox.style.display = 'block';
+                textInput.value = data.text;
+            } else {
+                ocrBox.style.display = 'none';
+            }
+
+            updateValue('res-lstm', data.lstm);
+            updateValue('res-phobert', data.phobert);
+        }
+
+        function updateValue(id, val) {
+            const el = document.getElementById(id);
+            el.innerText = val;
+            el.className = 'result-value ' + (val === 'Real' ? 'value-real' : 'value-fake');
+        }
+    </script>
+</body>
+</html>

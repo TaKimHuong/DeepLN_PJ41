@@ -2,6 +2,12 @@
 file_train/
 results/
 logs/
+checkpoints/
+checkpoints_*/
+checkpoints_02/
+checkpoints_03/
+checkpoints_01/
+
 
 # Python
 __pycache__/

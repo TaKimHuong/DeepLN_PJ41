@@ -1,0 +1,17 @@
+THÔNG TIN DATASET - NGÀY 15/05/2026
+====================================
+
+1. Thông tin chung:
+- Phiên bản: Baseline (Bộ dữ liệu gốc trước khi mở rộng).
+- Trạng thái: Đã hoàn thành huấn luyện các mô hình trong checkpoints_02.
+- Kỹ thuật huấn luyện: Feature Extraction (Frozen PhoBERT).
+
+
+2. Thống kê số lượng (từ public_train.csv):
+- Tổng số mẫu: 4,951
+- Tin thật (Label 0): 3,558 (71.8%)
+- Tin giả (Label 1): 1,393 (28.2%)
+
+3. Ghi chú:
+- Bộ dữ liệu này được sử dụng làm chuẩn đối chứng để so sánh hiệu quả sau khi bổ sung thêm 662 tin giả mới từ bộ ViFN-Vietnamese_Fake_New_Datasets_Ver3.
+- Các file trong thư mục này là bản sao lưu an toàn, không thay đổi.

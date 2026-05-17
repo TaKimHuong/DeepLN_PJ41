@@ -1,0 +1,17 @@
+THÔNG TIN DATASET - NGÀY 15/05/2026
+====================================
+
+1. Thông tin chung:
+- Phiên bản: v2.0 Expanded (Bộ dữ liệu đã mở rộng).
+- Trạng thái: Đã sáp nhập thêm 649 tin giả chất lượng từ bộ ViFN Ver3.
+- Đặc điểm: Đã lọc bỏ các tin trùng lặp (>70% similarity) và các bộ dữ liệu nhiễu (Misleading).
+
+2. Thống kê số lượng (từ public_train.csv):
+- Tổng số mẫu: 5,600
+- Tin thật (Label 0): 3,558 (63.5%)
+- Tin giả (Label 1): 2,042 (36.5%)
+
+3. Ghi chú:
+- Bộ dữ liệu này đã đạt trạng thái cân bằng tốt hơn (tỉ lệ tin giả tăng từ 28% lên 36.5%).
+- Sẵn sàng để thực hiện Preprocess và huấn luyện lại các mô hình AI (LSTM, PhoBERT) để đạt độ chính xác cao hơn.
+- Mọi thay đổi tiếp theo nên thực hiện trên bản copy này.

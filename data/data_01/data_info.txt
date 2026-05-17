@@ -1,0 +1,17 @@
+THÔNG TIN DATASET - NGÀY 15/05/2026
+====================================
+
+1. Thông tin chung:
+- Phiên bản: v1.0 Original (Bộ dữ liệu đầu tiên tải về).
+- Trạng thái: Dữ liệu thô ban đầu, chưa qua xử lý hoặc mở rộng.
+- Nguồn: public_train.csv (Downloads).
+
+2. Thống kê số lượng:
+- Tổng số mẫu: 4,372
+- Tin thật (Label 0): 3,638 (83.2%)
+- Tin giả (Label 1): 734 (16.8%)
+
+3. Ghi chú:
+- Đây là bộ dữ liệu sơ khai nhất của dự án.
+- Tỉ lệ tin giả còn khá thấp (16.8%), dẫn đến sự mất cân bằng lớn giữa hai lớp.
+- Đã được nâng cấp lên các phiên bản data_02 và data_03 sau này.
