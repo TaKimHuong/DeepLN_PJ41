@@ -4,7 +4,7 @@ import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import pandas as pd
-from phobert_model import run_phobert_experiment, load_valid_experiment_result, lr_to_tag, RESULTS_DIR
+from models.phobert_model import run_phobert_experiment, load_valid_experiment_result, lr_to_tag, RESULTS_DIR
 
 if __name__ == "__main__":
 
