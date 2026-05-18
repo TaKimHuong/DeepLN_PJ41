@@ -9,8 +9,8 @@ from models.phobert_model import run_phobert_experiment, load_valid_experiment_r
 if __name__ == "__main__":
 
     lr = 5e-05
-    dr = 0.1
-    bs = 32
+    dr = 0.3
+    bs = 8
 
     run_name = f"phobert_dr{dr}_bs{bs}_lr{lr_to_tag(lr)}"
 
